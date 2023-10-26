@@ -16,6 +16,7 @@ import {
   CaasApi_Item,
   MappedCaasItem,
   NormalizedProjectPropertyResponse,
+  NormalizedFetchResponse,
 } from '../types'
 import { FSXAApiErrors, FSXAProxyRoutes, HttpStatus } from '../enums'
 import { Logger, LogLevel } from './Logger'
@@ -164,6 +165,7 @@ export class FSXAProxyApi implements FSXAApi {
    * @param remoteProject specifies the remote project for the fetching process
    * @param fetchOptions specifies options in the fetching process
    * @param sort specifies the fields to sort. Default is by id descending. Multiple sortParams are possible. First parameter is prioritized over subsequent.
+   * @param normalized default false. If true, returns a NormalizedFetchResponse, otherwise a DenormalizedFetchRespone
    * @returns a JSON from the fetched elements
    *
    * @example
@@ -180,6 +182,7 @@ export class FSXAProxyApi implements FSXAApi {
     remoteProject,
     fetchOptions,
     sort = [],
+    normalized = false,
   }: FetchByFilterParams): Promise<FetchResponse> {
     if (pagesize < 1) {
       this._logger.warn(
@@ -247,6 +250,19 @@ export class FSXAProxyApi implements FSXAApi {
 
     const jsonRes = (await response.json()) as FetchResponse
     let { referenceMap, items, resolvedReferences, totalPages, size } = jsonRes
+
+    if (normalized) {
+      const normalizedResponse: NormalizedFetchResponse = {
+        page,
+        pagesize,
+        totalPages,
+        size,
+        items: items as (CaasApi_Item | MappedCaasItem)[],
+        referenceMap,
+        resolvedReferences,
+      }
+      return normalizedResponse
+    }
 
     items = denormalizeResolvedReferences(
       items as (CaasApi_Item | MappedCaasItem)[],
