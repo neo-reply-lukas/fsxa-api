@@ -1,8 +1,8 @@
 import { Logger } from './Logger'
 import * as saxes from 'saxes'
 import { RichTextElement } from '../types'
-import { get } from 'lodash'
 import { replaceUnnestedLinkTemplatesWithOneLinkElement } from '../utils'
+import { get } from './MappingUtils'
 
 // map characters which are not valid inside XML attributes enclosed in double quotes to their
 // entity representation

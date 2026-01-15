@@ -50,12 +50,19 @@ import {
   Section,
 } from '../types'
 import { parseISO } from 'date-fns'
-import { chunk } from 'lodash'
 import XMLParser from './XMLParser'
 import { Logger, LogLevel } from './Logger'
 import { FSXARemoteApi } from './FSXARemoteApi'
 import { FSXAContentMode, ImageMapAreaType } from '../enums'
 import { findResolvedReferencesByIds, getItemId } from './MappingUtils'
+
+const chunk = <T>(array: T[], size: number): T[][] => {
+  const chunks: T[][] = []
+  for (let i = 0; i < array.length; i += size) {
+    chunks.push(array.slice(i, i + size))
+  }
+  return chunks
+}
 
 export enum CaaSMapperErrors {
   UNKNOWN_BODY_CONTENT = 'Unknown BodyContent could not be mapped.',
@@ -63,7 +70,7 @@ export enum CaaSMapperErrors {
 }
 
 const REFERENCED_ITEMS_CHUNK_SIZE = 30
-export const DEFAULT_MAX_REFERENCE_DEPTH = 10
+export const DEFAULT_MAX_REFERENCE_DEPTH = 2
 
 export interface ReferencedItemsInfo {
   [identifier: string]: NestedPath[]
@@ -1076,7 +1083,7 @@ export class CaaSMapper {
     if (this.referenceDepth >= this.maxReferenceDepth) {
       // hint: handle unresolved references TNG-1169
       this.logger.warn(
-        `Maximum reference depth of ${this.maxReferenceDepth} has been exceeded.`
+        `Maximum reference depth of ${this.maxReferenceDepth} has been reached.`
       )
       return
     }

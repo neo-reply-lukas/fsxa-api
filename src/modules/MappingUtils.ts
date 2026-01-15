@@ -1,7 +1,31 @@
-import { set, get } from 'lodash'
 import { CaasApi_Item, Image, MappedCaasItem, NestedPath } from '../types'
 import { ResolvedReferencesInfo, ReferencedItemsInfo } from './CaaSMapper'
 import { Logger } from './Logger'
+
+// Native get/set replacement
+export const get = (obj: any, path: string | (string | number)[], defaultValue?: any): any => {
+  const keys = Array.isArray(path) ? path : path.split('.')
+  let result = obj
+  for (const key of keys) {
+    result = result?.[key]
+    if (result === undefined) return defaultValue
+  }
+  return result
+}
+
+export const set = (obj: any, path: string | (string | number)[], value: any): any => {
+  const keys = Array.isArray(path) ? [...path] : path.split('.')  // Copy array to avoid mutation
+  const lastKey = keys.pop()!
+  let current = obj
+  for (const key of keys) {
+    if (!(key in current) || typeof current[key] !== 'object') {
+      current[key] = {}
+    }
+    current = current[key]
+  }
+  current[lastKey] = value
+  return obj
+}
 
 const IMAGE_MAP_PLACEHOLDER = 'IMAGEMAP'
 const IMAGE_MAP_RESOLUTION_SPLIT_DELIMITER = '___'
